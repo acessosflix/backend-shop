@@ -22,8 +22,17 @@ class OrderController extends Controller
         try {
             $user = auth('api')->user();
             
+            // Buscar UserClient do usuário autenticado
+            $userClient = $user->userClient;
+            if (!$userClient) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                ]);
+            }
+            
             $orders = Order::with(['orderItems.product', 'orderItems.product.category'])
-                ->where('user_client_id', $user->id)
+                ->where('user_client_id', $userClient->id)
                 ->orderBy('created_at', 'desc')
                 ->paginate($request->get('per_page', 15));
 
@@ -57,6 +66,15 @@ class OrderController extends Controller
 
         try {
             $user = auth('api')->user();
+            
+            // Buscar ou criar UserClient para o usuário autenticado
+            $userClient = $user->userClient;
+            if (!$userClient) {
+                // Criar UserClient se não existir
+                $userClient = \App\Models\UserClient::create([
+                    'user_id' => $user->id,
+                ]);
+            }
 
             DB::beginTransaction();
 
@@ -88,7 +106,7 @@ class OrderController extends Controller
             }
 
             $order = Order::create([
-                'user_client_id' => $user->id,
+                'user_client_id' => $userClient->id,
                 'total_amount' => $totalAmount,
                 'payment_method' => 'crypto',
                 'status' => 'pending',
@@ -128,9 +146,18 @@ class OrderController extends Controller
         try {
             $user = auth('api')->user();
             
+            // Buscar UserClient do usuário autenticado
+            $userClient = $user->userClient;
+            if (!$userClient) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found'
+                ], 404);
+            }
+            
             $order = Order::with(['orderItems.product', 'orderItems.product.category'])
                 ->where('id', $id)
-                ->where('user_client_id', $user->id)
+                ->where('user_client_id', $userClient->id)
                 ->first();
 
             if (!$order) {

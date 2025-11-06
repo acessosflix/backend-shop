@@ -30,7 +30,11 @@ class EcommerceOrderResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('user_client_id')
                             ->label('Cliente')
-                            ->relationship('userClient', 'name')
+                            ->relationship('userClient', 'id', fn ($query) => $query->with('user'))
+                            ->getOptionLabelFromRecordUsing(fn ($record) => {
+                                $record->loadMissing('user');
+                                return $record->user->name ?? "Cliente #{$record->id}";
+                            })
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -91,9 +95,9 @@ class EcommerceOrderResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('userClient.name')
+                Tables\Columns\TextColumn::make('userClient.user.name')
                     ->label('Cliente')
-                    ->searchable()
+                    ->searchable(['userClient.user.name', 'userClient.user.email'])
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Valor Total')
@@ -173,7 +177,10 @@ class EcommerceOrderResource extends Resource
                         // Enviar email quando o pedido é despachado
                         if ($originalStatus !== 'shipped') {
                             try {
-                                Mail::to($record->userClient->email)->send(new OrderShippedMailable($record));
+                                $userClient = $record->userClient;
+                                if ($userClient && $userClient->user) {
+                                    Mail::to($userClient->user->email)->send(new OrderShippedMailable($record));
+                                }
                             } catch (\Exception $e) {
                                 Log::error('Failed to send order shipped email', [
                                     'order_id' => $record->id,

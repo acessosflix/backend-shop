@@ -4,59 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class UserClient extends Authenticatable implements JWTSubject
+class UserClient extends Model
 {
     use HasFactory;
 
     protected $table = 'user_clients';
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'phone',
+        'user_id',
         'address',
         'city',
         'state',
         'zipcode',
+        'avatar',
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected function casts(): array
+    /**
+     * Relação com User (dados básicos)
+     */
+    public function user(): BelongsTo
     {
-        return [
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(User::class);
     }
 
     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
+     * Relação com Orders
      */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\UserClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +16,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:user_clients',
+            'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
@@ -31,11 +32,18 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = UserClient::create([
+        // Criar User primeiro (dados básicos)
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
+            'is_admin' => false,
+        ]);
+
+        // Criar UserClient (dados complementares)
+        $userClient = UserClient::create([
+            'user_id' => $user->id,
             'address' => $request->address,
             'city' => $request->city,
             'state' => $request->state,
@@ -43,6 +51,9 @@ class AuthController extends Controller
         ]);
 
         $token = auth('api')->fromUser($user);
+
+        // Carregar relação para retornar dados completos
+        $user->load('userClient');
 
         return response()->json([
             'success' => true,
@@ -82,7 +93,7 @@ class AuthController extends Controller
             ], 500);
         }
 
-        $user = UserClient::where('email', $credentials['email'])->first();
+        $user = User::where('email', $credentials['email'])->with('userClient')->first();
 
         return response()->json([
             'success' => true,
@@ -103,6 +114,9 @@ class AuthController extends Controller
                     'message' => 'User not found'
                 ], 404);
             }
+
+            // Carregar relação userClient se existir
+            $user->load('userClient');
 
             return response()->json([
                 'success' => true,

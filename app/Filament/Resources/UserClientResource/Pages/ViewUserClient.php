@@ -26,11 +26,11 @@ class ViewUserClient extends ViewRecord
             ->schema([
                 Infolists\Components\Section::make('Dados Básicos')
                     ->schema([
-                        Infolists\Components\TextEntry::make('name')
+                        Infolists\Components\TextEntry::make('user.name')
                             ->label('Nome'),
-                        Infolists\Components\TextEntry::make('email')
+                        Infolists\Components\TextEntry::make('user.email')
                             ->label('E-mail'),
-                        Infolists\Components\TextEntry::make('phone')
+                        Infolists\Components\TextEntry::make('user.phone')
                             ->label('Telefone'),
                     ])
                     ->columns(3),
@@ -47,6 +47,12 @@ class ViewUserClient extends ViewRecord
                             ->label('CEP'),
                     ])
                     ->columns(3),
+                Infolists\Components\Section::make('Avatar')
+                    ->schema([
+                        Infolists\Components\ImageEntry::make('avatar')
+                            ->label('Avatar')
+                            ->circular(),
+                    ]),
                 Infolists\Components\Section::make('Informações Adicionais')
                     ->schema([
                         Infolists\Components\TextEntry::make('orders_count')
