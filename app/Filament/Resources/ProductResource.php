@@ -23,72 +23,83 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('category_id')
-                    ->label('Categoria')
-                    ->relationship('category', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome')
-                    ->required()
-                    ->maxLength(255)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('slug', Str::slug($state))),
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
-                    ->rows(3)
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('price')
-                    ->label('Preço')
-                    ->numeric()
-                    ->required()
-                    ->prefix('$')
-                    ->step(0.01),
-                Forms\Components\TextInput::make('stock')
-                    ->label('Estoque')
-                    ->numeric()
-                    ->required()
-                    ->default(0)
-                    ->minValue(0),
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'active' => 'Ativo',
-                        'inactive' => 'Inativo',
-                    ])
-                    ->required()
-                    ->default('active'),
-                Forms\Components\Repeater::make('images')
-                    ->label('Imagens do Produto (máximo 5)')
-                    ->relationship('images')
+                Forms\Components\Section::make('Informações Básicas')
                     ->schema([
-                        Forms\Components\FileUpload::make('image_path')
-                            ->label('Imagem')
-                            ->image()
-                            ->directory('products')
+                        Forms\Components\Select::make('category_id')
+                            ->label('Categoria')
+                            ->relationship('category', 'name')
                             ->required()
-                            ->imageEditor()
-                            ->maxSize(5120),
-                        Forms\Components\TextInput::make('order')
-                            ->label('Ordem')
-                            ->numeric()
-                            ->default(0)
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
                             ->required()
-                            ->hidden(),
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('slug', Str::slug($state))),
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Slug')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Descrição')
+                            ->rows(3)
+                            ->columnSpanFull(),
                     ])
-                    ->defaultItems(0)
-                    ->minItems(0)
-                    ->maxItems(5)
-                    ->reorderableWithButtons()
-                    ->collapsible()
-                    ->itemLabel(fn (array $state): ?string => $state['image_path'] ?? 'Nova imagem')
-                    ->columnSpanFull(),
+                    ->columns(2),
+                Forms\Components\Section::make('Preço e Estoque')
+                    ->schema([
+                        Forms\Components\TextInput::make('price')
+                            ->label('Preço')
+                            ->numeric()
+                            ->required()
+                            ->prefix('$')
+                            ->step(0.01),
+                        Forms\Components\TextInput::make('stock')
+                            ->label('Estoque')
+                            ->numeric()
+                            ->required()
+                            ->default(0)
+                            ->minValue(0),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'active' => 'Ativo',
+                                'inactive' => 'Inativo',
+                            ])
+                            ->required()
+                            ->default('active'),
+                    ])
+                    ->columns(3),
+                Forms\Components\Section::make('Imagens do Produto')
+                    ->schema([
+                        Forms\Components\Repeater::make('images')
+                            ->label('Imagens do Produto (máximo 5)')
+                            ->relationship('images')
+                            ->schema([
+                                Forms\Components\FileUpload::make('image_path')
+                                    ->label('Imagem')
+                                    ->image()
+                                    ->directory('products')
+                                    ->required()
+                                    ->imageEditor()
+                                    ->maxSize(5120),
+                                Forms\Components\TextInput::make('order')
+                                    ->label('Ordem')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->required()
+                                    ->hidden(),
+                            ])
+                            ->defaultItems(0)
+                            ->minItems(0)
+                            ->maxItems(5)
+                            ->reorderableWithButtons()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['image_path'] ?? 'Nova imagem')
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 

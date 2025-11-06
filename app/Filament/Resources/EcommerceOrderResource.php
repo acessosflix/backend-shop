@@ -23,49 +23,61 @@ class EcommerceOrderResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('user_client_id')
-                    ->label('Cliente')
-                    ->relationship('userClient', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-                Forms\Components\TextInput::make('total_amount')
-                    ->label('Valor Total')
-                    ->numeric()
-                    ->required()
-                    ->prefix('$')
-                    ->disabled(),
-                Forms\Components\Select::make('payment_method')
-                    ->label('Método de Pagamento')
-                    ->options([
-                        'crypto' => 'Crypto',
-                        'zelle' => 'Zelle',
-                        'card' => 'Cartão',
+                Forms\Components\Section::make('Informações do Pedido')
+                    ->schema([
+                        Forms\Components\Select::make('user_client_id')
+                            ->label('Cliente')
+                            ->relationship('userClient', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\TextInput::make('total_amount')
+                            ->label('Valor Total')
+                            ->numeric()
+                            ->required()
+                            ->prefix('$')
+                            ->disabled(),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'pending' => 'Pendente',
+                                'paid' => 'Pago',
+                                'processing' => 'Processando',
+                                'shipped' => 'Enviado',
+                                'delivered' => 'Entregue',
+                                'cancelled' => 'Cancelado',
+                            ])
+                            ->required(),
+                        Forms\Components\TextInput::make('tracking_code')
+                            ->label('Código de Rastreio')
+                            ->maxLength(255)
+                            ->visible(fn ($record) => $record?->status === 'shipped' || $record?->status === 'delivered'),
                     ])
-                    ->required(),
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'pending' => 'Pendente',
-                        'paid' => 'Pago',
-                        'processing' => 'Processando',
-                        'shipped' => 'Enviado',
-                        'delivered' => 'Entregue',
-                        'cancelled' => 'Cancelado',
+                    ->columns(2),
+                Forms\Components\Section::make('Informações de Pagamento')
+                    ->schema([
+                        Forms\Components\Select::make('payment_method')
+                            ->label('Método de Pagamento')
+                            ->options([
+                                'crypto' => 'Crypto',
+                                'zelle' => 'Zelle',
+                                'card' => 'Cartão',
+                            ])
+                            ->required(),
+                        Forms\Components\TextInput::make('transaction_id')
+                            ->label('ID da Transação')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('zelle_reference')
+                            ->label('Referência Zelle')
+                            ->maxLength(255)
+                            ->visible(fn ($record) => $record?->payment_method === 'zelle'),
+                        Forms\Components\TextInput::make('proof_image_url')
+                            ->label('URL da Imagem de Comprovante')
+                            ->url()
+                            ->maxLength(255)
+                            ->visible(fn ($record) => $record?->payment_method === 'zelle'),
                     ])
-                    ->required(),
-                Forms\Components\TextInput::make('transaction_id')
-                    ->label('ID da Transação')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('zelle_reference')
-                    ->label('Referência Zelle')
-                    ->maxLength(255)
-                    ->visible(fn ($record) => $record?->payment_method === 'zelle'),
-                Forms\Components\TextInput::make('proof_image_url')
-                    ->label('URL da Imagem de Comprovante')
-                    ->url()
-                    ->maxLength(255)
-                    ->visible(fn ($record) => $record?->payment_method === 'zelle'),
+                    ->columns(2),
             ]);
     }
 
@@ -103,6 +115,10 @@ class EcommerceOrderResource extends Resource
                         'delivered' => 'success',
                         'cancelled' => 'danger',
                     }),
+                Tables\Columns\TextColumn::make('tracking_code')
+                    ->label('Código de Rastreio')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('orderItems_count')
                     ->label('Itens')
                     ->counts('orderItems'),
@@ -131,6 +147,25 @@ class EcommerceOrderResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('mark_as_shipped')
+                    ->label('Pedido Enviado')
+                    ->icon('heroicon-o-truck')
+                    ->color('info')
+                    ->visible(fn ($record) => $record->status !== 'shipped' && $record->status !== 'delivered' && $record->status !== 'cancelled')
+                    ->form([
+                        Forms\Components\TextInput::make('tracking_code')
+                            ->label('Código de Rastreio')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Digite o código de rastreio'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'tracking_code' => $data['tracking_code'],
+                            'status' => 'shipped',
+                        ]);
+                    })
+                    ->successNotificationTitle('Pedido marcado como enviado com sucesso!'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
             ])

@@ -24,40 +24,51 @@ class UserClientResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->label('E-mail')
-                    ->email()
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('password')
-                    ->label('Senha')
-                    ->password()
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->label('Telefone')
-                    ->tel()
-                    ->maxLength(20),
-                Forms\Components\Textarea::make('address')
-                    ->label('Endereço')
-                    ->rows(3)
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('city')
-                    ->label('Cidade')
-                    ->maxLength(100),
-                Forms\Components\TextInput::make('state')
-                    ->label('Estado')
-                    ->maxLength(100),
-                Forms\Components\TextInput::make('zipcode')
-                    ->label('CEP')
-                    ->maxLength(20),
+                Forms\Components\Section::make('Dados de Acesso')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('E-mail')
+                            ->email()
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('password')
+                            ->label('Senha')
+                            ->password()
+                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->required(fn (string $context): bool => $context === 'create')
+                            ->maxLength(255),
+                    ])
+                    ->columns(2),
+                Forms\Components\Section::make('Informações de Contato')
+                    ->schema([
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Telefone')
+                            ->tel()
+                            ->maxLength(20),
+                    ]),
+                Forms\Components\Section::make('Endereço')
+                    ->schema([
+                        Forms\Components\Textarea::make('address')
+                            ->label('Endereço')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('city')
+                            ->label('Cidade')
+                            ->maxLength(100),
+                        Forms\Components\TextInput::make('state')
+                            ->label('Estado')
+                            ->maxLength(100),
+                        Forms\Components\TextInput::make('zipcode')
+                            ->label('CEP')
+                            ->maxLength(20),
+                    ])
+                    ->columns(3),
             ]);
     }
 

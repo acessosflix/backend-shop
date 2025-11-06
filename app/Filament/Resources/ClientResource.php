@@ -22,21 +22,29 @@ class ClientResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('company_name')
-                    ->label('Nome da Empresa')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('document')
-                    ->label('CPF/CNPJ')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->label('Telefone')
-                    ->tel()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->label('E-mail')
-                    ->email()
-                    ->maxLength(255),
+                Forms\Components\Section::make('Informações da Empresa')
+                    ->schema([
+                        Forms\Components\TextInput::make('company_name')
+                            ->label('Nome da Empresa')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('document')
+                            ->label('CPF/CNPJ')
+                            ->maxLength(255),
+                    ])
+                    ->columns(2),
+                Forms\Components\Section::make('Contato')
+                    ->schema([
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Telefone')
+                            ->tel()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('E-mail')
+                            ->email()
+                            ->maxLength(255),
+                    ])
+                    ->columns(2),
             ]);
     }
 

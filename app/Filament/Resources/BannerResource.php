@@ -23,23 +23,27 @@ class BannerResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->label('Título')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('image')
-                    ->label('Imagem')
-                    ->image()
-                    ->required()
-                    ->directory('banners')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('link')
-                    ->label('Link')
-                    ->url()
-                    ->maxLength(255),
-                Forms\Components\Toggle::make('active')
-                    ->label('Ativo')
-                    ->default(true),
+                Forms\Components\Section::make('Informações do Banner')
+                    ->schema([
+                        Forms\Components\TextInput::make('title')
+                            ->label('Título')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\FileUpload::make('image')
+                            ->label('Imagem')
+                            ->image()
+                            ->required()
+                            ->directory('banners')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('link')
+                            ->label('Link')
+                            ->url()
+                            ->maxLength(255),
+                        Forms\Components\Toggle::make('active')
+                            ->label('Ativo')
+                            ->default(true),
+                    ])
+                    ->columns(2),
             ]);
     }
 

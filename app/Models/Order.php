@@ -19,6 +19,7 @@ class Order extends Model
         'transaction_id',
         'zelle_reference',
         'proof_image_url',
+        'tracking_code',
     ];
 
     protected function casts(): array
