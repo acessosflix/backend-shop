@@ -3,12 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EcommerceOrderResource\Pages;
+use App\Mail\OrderShippedMailable;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class EcommerceOrderResource extends Resource
 {
@@ -160,10 +163,24 @@ class EcommerceOrderResource extends Resource
                             ->placeholder('Digite o código de rastreio'),
                     ])
                     ->action(function ($record, array $data) {
+                        $originalStatus = $record->status;
+                        
                         $record->update([
                             'tracking_code' => $data['tracking_code'],
                             'status' => 'shipped',
                         ]);
+
+                        // Enviar email quando o pedido é despachado
+                        if ($originalStatus !== 'shipped') {
+                            try {
+                                Mail::to($record->userClient->email)->send(new OrderShippedMailable($record));
+                            } catch (\Exception $e) {
+                                Log::error('Failed to send order shipped email', [
+                                    'order_id' => $record->id,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
+                        }
                     })
                     ->successNotificationTitle('Pedido marcado como enviado com sucesso!'),
                 Tables\Actions\EditAction::make(),
