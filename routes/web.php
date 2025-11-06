@@ -10,3 +10,4 @@ Route::get('/', function () {
 
 
 Route::post('/webhooks/c6', [WebhookController::class, 'handleC6']);
+Route::post('/webhooks/crypto', [WebhookController::class, 'handleCrypto']);
