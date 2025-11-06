@@ -77,14 +77,14 @@ class CouponResource extends Resource
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descrição')
                     ->limit(50)
-                    ->tooltip(fn ($record) => $record->description)
+                    ->tooltip(fn($record) => $record->description)
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('discount_percentage')
                     ->label('Desconto')
                     ->suffix('%')
                     ->sortable()
                     ->badge()
-                    ->color(fn ($state) => match (true) {
+                    ->color(fn($state) => match (true) {
                         $state >= 30 => 'success',
                         $state >= 15 => 'warning',
                         default => 'info',
@@ -93,14 +93,8 @@ class CouponResource extends Resource
                     ->label('Validade')
                     ->date('d/m/Y')
                     ->sortable()
-                    ->color(fn ($record) => {
-                        if (!$record->valid_until) {
-                            return null;
-                        }
-                        return $record->valid_until->isPast() ? 'danger' : ($record->valid_until->isToday() ? 'warning' : null);
-                    })
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state ? $state->format('d/m/Y') : 'Sem validade'),
+                    ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : 'Sem validade'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
@@ -132,11 +126,11 @@ class CouponResource extends Resource
                         return $query
                             ->when(
                                 $data['valid_from'],
-                                fn ($query, $date) => $query->whereDate('valid_until', '>=', $date)
+                                fn($query, $date) => $query->whereDate('valid_until', '>=', $date)
                             )
                             ->when(
                                 $data['valid_until'],
-                                fn ($query, $date) => $query->whereDate('valid_until', '<=', $date)
+                                fn($query, $date) => $query->whereDate('valid_until', '<=', $date)
                             );
                     }),
             ])
