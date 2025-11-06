@@ -17,7 +17,6 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticationPlugin;
 
 
 class AdminPanelProvider extends PanelProvider
@@ -30,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Violet,
+                'primary' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -55,22 +54,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
            ->plugins([
-                TwoFactorAuthenticationPlugin::make()
-                    ->enableTwoFactorAuthentication(
-                        condition: false, // Habilita Google 2FA
-                    )
-                    ->enablePasskeyAuthentication(
-                        condition: true, // Habilita Passkey
-                    )
-                    ->addTwoFactorMenuItem(
-                        condition: true, // Mostra 2FA no menu do usuário
-                        label: '2FA',
-                        icon: 'heroicon-s-key',
-                    )
-                    ->forceTwoFactorSetup(
-                        condition: false, // Mude para true se quiser forçar setup
-                        requiresPassword: true,
-                    )
+             
             ])
             ->authMiddleware([
                 Authenticate::class,

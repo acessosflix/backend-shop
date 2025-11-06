@@ -18,7 +18,7 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "maatwebsite/excel": "^1.1",
-        "stephenjude/filament-two-factor-authentication": "^2.0",
+        "stephenjude/filament-two-factor-authentication": "^1.0",
         "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {
