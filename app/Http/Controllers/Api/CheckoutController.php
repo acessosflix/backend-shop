@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\UserClient;
 use App\Services\Payments\Gateways\CryptoNowPaymentsService;
 use App\Services\Payments\Gateways\ZellePaymentService;
 use App\Services\Payments\Gateways\CardGatewayPlaceholder;
@@ -40,6 +41,15 @@ class CheckoutController extends Controller
 
         try {
             $user = auth('api')->user();
+            
+            // Buscar ou criar UserClient para o usuário autenticado
+            $userClient = $user->userClient;
+            if (!$userClient) {
+                // Criar UserClient se não existir
+                $userClient = UserClient::create([
+                    'user_id' => $user->id,
+                ]);
+            }
 
             DB::beginTransaction();
 
@@ -71,7 +81,7 @@ class CheckoutController extends Controller
             }
 
             $order = Order::create([
-                'user_client_id' => $user->id,
+                'user_client_id' => $userClient->id,
                 'total_amount' => $totalAmount,
                 'payment_method' => $request->payment_method,
                 'status' => 'pending',

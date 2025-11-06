@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserClientResource\Pages;
 use App\Filament\Resources\UserClientResource\RelationManagers;
+use App\Models\User;
 use App\Models\UserClient;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -24,33 +25,37 @@ class UserClientResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Dados de Acesso')
+                Forms\Components\Section::make('Usuário')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nome')
+                        Forms\Components\Select::make('user_id')
+                            ->label('Usuário')
+                            ->relationship('user', 'name')
+                            ->searchable(['name', 'email'])
+                            ->preload()
                             ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('email')
-                            ->label('E-mail')
-                            ->email()
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('password')
-                            ->label('Senha')
-                            ->password()
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->required(fn (string $context): bool => $context === 'create')
-                            ->maxLength(255),
-                    ])
-                    ->columns(2),
-                Forms\Components\Section::make('Informações de Contato')
-                    ->schema([
-                        Forms\Components\TextInput::make('phone')
-                            ->label('Telefone')
-                            ->tel()
-                            ->maxLength(20),
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nome')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('email')
+                                    ->label('E-mail')
+                                    ->email()
+                                    ->required()
+                                    ->unique('users', 'email')
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('password')
+                                    ->label('Senha')
+                                    ->password()
+                                    ->required()
+                                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('phone')
+                                    ->label('Telefone')
+                                    ->tel()
+                                    ->maxLength(20),
+                            ])
+                            ->columnSpanFull(),
                     ]),
                 Forms\Components\Section::make('Endereço')
                     ->schema([
@@ -69,6 +74,14 @@ class UserClientResource extends Resource
                             ->maxLength(20),
                     ])
                     ->columns(3),
+                Forms\Components\Section::make('Avatar')
+                    ->schema([
+                        Forms\Components\FileUpload::make('avatar')
+                            ->label('Avatar')
+                            ->image()
+                            ->directory('avatars')
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -76,18 +89,21 @@ class UserClientResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('user.name')
                     ->label('Nome')
-                    ->searchable()
+                    ->searchable(['user.name', 'user.email'])
                     ->sortable(),
-                Tables\Columns\TextColumn::make('email')
+                Tables\Columns\TextColumn::make('user.email')
                     ->label('E-mail')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('phone')
+                Tables\Columns\TextColumn::make('user.phone')
                     ->label('Telefone'),
                 Tables\Columns\TextColumn::make('city')
                     ->label('Cidade'),
+                Tables\Columns\ImageColumn::make('avatar')
+                    ->label('Avatar')
+                    ->circular(),
                 Tables\Columns\TextColumn::make('orders_count')
                     ->label('Pedidos')
                     ->counts('orders'),
