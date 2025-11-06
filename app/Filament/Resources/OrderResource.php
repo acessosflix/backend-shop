@@ -30,7 +30,8 @@ class OrderResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('user_client_id')
                             ->label('Cliente')
-                            ->relationship('userClient', 'id', fn ($query) => $query->with('user'))
+                            ->relationship('userClient', 'id')
+                            ->modifyQueryUsing(fn ($query) => $query->with('user'))
                             ->getOptionLabelFromRecordUsing(fn ($record) => {
                                 $record->loadMissing('user');
                                 return $record->user->name ?? "Cliente #{$record->id}";
