@@ -23,15 +23,18 @@ class SettingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('key')
-                    ->label('Chave')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('value')
-                    ->label('Valor')
-                    ->rows(3)
-                    ->columnSpanFull(),
+                Forms\Components\Section::make('Configuração')
+                    ->schema([
+                        Forms\Components\TextInput::make('key')
+                            ->label('Chave')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('value')
+                            ->label('Valor')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 

@@ -13,7 +13,10 @@ class TopProductsWidget extends BaseWidget
 {
     protected static ?string $heading = 'Produtos Mais Vendidos';
     protected static ?int $sort = 4;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = [
+        'md' => 1,
+        'xl' => 1,
+    ];
 
     protected function getTableQuery(): Builder
     {

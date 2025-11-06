@@ -23,12 +23,34 @@ class PaymentResource extends Resource
         // Read-only or simple form
         return $form
             ->schema([
-                Forms\Components\Select::make('invoice_id')->relationship('invoice', 'number')->disabled(),
-                Forms\Components\TextInput::make('amount')->numeric()->prefix('R$')->disabled(),
-                Forms\Components\DateTimePicker::make('paid_at')->disabled(),
-                Forms\Components\TextInput::make('method')->disabled(),
-                Forms\Components\TextInput::make('transaction_id')->disabled(),
-                Forms\Components\Select::make('status')->options(['pending' => 'Pendente', 'confirmed' => 'Confirmado', 'failed' => 'Falhou'])->disabled(),
+                Forms\Components\Section::make('Informações do Pagamento')
+                    ->schema([
+                        Forms\Components\Select::make('invoice_id')
+                            ->relationship('invoice', 'number')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('amount')
+                            ->numeric()
+                            ->prefix('R$')
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('paid_at')
+                            ->disabled(),
+                    ])
+                    ->columns(3),
+                Forms\Components\Section::make('Detalhes da Transação')
+                    ->schema([
+                        Forms\Components\TextInput::make('method')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('transaction_id')
+                            ->disabled(),
+                        Forms\Components\Select::make('status')
+                            ->options([
+                                'pending' => 'Pendente',
+                                'confirmed' => 'Confirmado',
+                                'failed' => 'Falhou'
+                            ])
+                            ->disabled(),
+                    ])
+                    ->columns(3),
             ]);
     }
 

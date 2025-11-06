@@ -9,7 +9,10 @@ class ProductsChartWidget extends ChartWidget
 {
     protected static ?string $heading = 'Produtos por Categoria';
     protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = [
+        'md' => 1,
+        'xl' => 1,
+    ];
 
     protected function getData(): array
     {

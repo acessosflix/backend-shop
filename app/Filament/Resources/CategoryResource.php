@@ -23,21 +23,24 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome')
-                    ->required()
-                    ->maxLength(255)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('slug', Str::slug($state))),
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
-                    ->rows(3)
-                    ->columnSpanFull(),
+                Forms\Components\Section::make('Informações da Categoria')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
+                            ->required()
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('slug', Str::slug($state))),
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Slug')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Descrição')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
