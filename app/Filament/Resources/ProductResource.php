@@ -64,10 +64,30 @@ class ProductResource extends Resource
                     ])
                     ->required()
                     ->default('active'),
-                Forms\Components\FileUpload::make('image')
-                    ->label('Imagem')
-                    ->image()
-                    ->directory('products')
+                Forms\Components\Repeater::make('images')
+                    ->label('Imagens do Produto (máximo 5)')
+                    ->relationship('images')
+                    ->schema([
+                        Forms\Components\FileUpload::make('image_path')
+                            ->label('Imagem')
+                            ->image()
+                            ->directory('products')
+                            ->required()
+                            ->imageEditor()
+                            ->maxSize(5120),
+                        Forms\Components\TextInput::make('order')
+                            ->label('Ordem')
+                            ->numeric()
+                            ->default(0)
+                            ->required()
+                            ->hidden(),
+                    ])
+                    ->defaultItems(0)
+                    ->minItems(0)
+                    ->maxItems(5)
+                    ->reorderableWithButtons()
+                    ->collapsible()
+                    ->itemLabel(fn (array $state): ?string => $state['image_path'] ?? 'Nova imagem')
                     ->columnSpanFull(),
             ]);
     }
@@ -76,9 +96,13 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
+                Tables\Columns\ImageColumn::make('images.image_path')
                     ->label('Imagem')
-                    ->circular(),
+                    ->circular()
+                    ->limit(1)
+                    ->getStateUsing(function (Product $record) {
+                        return $record->images()->first()?->image_path;
+                    }),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
                     ->searchable()
