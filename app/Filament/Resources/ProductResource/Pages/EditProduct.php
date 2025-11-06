@@ -16,4 +16,19 @@ class EditProduct extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $this->updateImageOrder();
+    }
+
+    protected function updateImageOrder(): void
+    {
+        $product = $this->record;
+        $images = $product->images()->orderBy('id')->get();
+        
+        foreach ($images as $index => $image) {
+            $image->update(['order' => $index]);
+        }
+    }
 }
