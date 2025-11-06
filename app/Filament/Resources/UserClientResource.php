@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserClientResource\Pages;
+use App\Filament\Resources\UserClientResource\RelationManagers;
 use App\Models\UserClient;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -89,6 +90,7 @@ class UserClientResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -102,7 +104,7 @@ class UserClientResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\OrdersRelationManager::class,
         ];
     }
 
@@ -111,6 +113,7 @@ class UserClientResource extends Resource
         return [
             'index' => Pages\ListUserClients::route('/'),
             'create' => Pages\CreateUserClient::route('/create'),
+            'view' => Pages\ViewUserClient::route('/{record}'),
             'edit' => Pages\EditUserClient::route('/{record}/edit'),
         ];
     }
