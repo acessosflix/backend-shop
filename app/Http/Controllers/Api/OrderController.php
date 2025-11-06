@@ -6,18 +6,38 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Services\Payments\Gateways\CryptoNowPaymentsService;
-use App\Services\Payments\Gateways\ZellePaymentService;
-use App\Services\Payments\Gateways\CardGatewayPlaceholder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class CheckoutController extends Controller
+class OrderController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:api')->except([]);
+    }
+
+    public function index(Request $request)
+    {
+        try {
+            $user = auth('api')->user();
+            
+            $orders = Order::with(['orderItems.product', 'orderItems.product.category'])
+                ->where('user_client_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->paginate($request->get('per_page', 15));
+
+            return response()->json([
+                'success' => true,
+                'data' => $orders,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch orders',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -26,9 +46,6 @@ class CheckoutController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:crypto,zelle,card',
-            'zelle_reference' => 'nullable|string|required_if:payment_method,zelle',
-            'proof_image_url' => 'nullable|url|required_if:payment_method,zelle',
         ]);
 
         if ($validator->fails()) {
@@ -73,10 +90,8 @@ class CheckoutController extends Controller
             $order = Order::create([
                 'user_client_id' => $user->id,
                 'total_amount' => $totalAmount,
-                'payment_method' => $request->payment_method,
+                'payment_method' => 'crypto',
                 'status' => 'pending',
-                'zelle_reference' => $request->zelle_reference,
-                'proof_image_url' => $request->proof_image_url,
             ]);
 
             foreach ($orderItems as $item) {
@@ -88,26 +103,6 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Process payment based on method
-            $paymentService = $this->getPaymentService($request->payment_method);
-            $callbackUrl = url('/api/v1/payment/callback');
-            
-            $paymentResult = $paymentService->createPayment(
-                $order,
-                $totalAmount,
-                'USD', // Default currency, can be made configurable
-                $callbackUrl
-            );
-
-            if (!$paymentResult['success']) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => $paymentResult['message'] ?? 'Payment processing failed',
-                    'error' => $paymentResult['error'] ?? null,
-                ], 400);
-            }
-
             DB::commit();
 
             $order->load(['orderItems.product']);
@@ -115,29 +110,46 @@ class CheckoutController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Order created successfully',
-                'data' => [
-                    'order' => $order,
-                    'payment' => $paymentResult,
-                ],
+                'data' => $order,
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to process checkout',
+                'message' => 'Failed to create order',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    private function getPaymentService(string $method)
+    public function show($id)
     {
-        return match($method) {
-            'crypto' => new CryptoNowPaymentsService(),
-            'zelle' => new ZellePaymentService(),
-            'card' => new CardGatewayPlaceholder(),
-            default => new ZellePaymentService(),
-        };
+        try {
+            $user = auth('api')->user();
+            
+            $order = Order::with(['orderItems.product', 'orderItems.product.category'])
+                ->where('id', $id)
+                ->where('user_client_id', $user->id)
+                ->first();
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
