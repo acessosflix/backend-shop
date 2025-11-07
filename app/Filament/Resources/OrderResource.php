@@ -30,12 +30,7 @@ class OrderResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('user_client_id')
                             ->label('Cliente')
-                            ->relationship('userClient', 'id')
-                            ->modifyQueryUsing(fn ($query) => $query->with('user'))
-                            ->getOptionLabelFromRecordUsing(fn ($record) => {
-                                $record->loadMissing('user');
-                                return $record->user->name ?? "Cliente #{$record->id}";
-                            })
+                            ->relationship('userClient.user', 'name')
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -59,7 +54,7 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('tracking_code')
                             ->label('Código de Rastreio')
                             ->maxLength(255)
-                            ->visible(fn ($record) => $record?->status === 'shipped' || $record?->status === 'delivered'),
+                            ->visible(fn($record) => $record?->status === 'shipped' || $record?->status === 'delivered'),
                     ])
                     ->columns(2),
                 Forms\Components\Section::make('Informações de Pagamento')
@@ -78,12 +73,12 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('zelle_reference')
                             ->label('Referência Zelle')
                             ->maxLength(255)
-                            ->visible(fn ($record) => $record?->payment_method === 'zelle'),
+                            ->visible(fn($record) => $record?->payment_method === 'zelle'),
                         Forms\Components\TextInput::make('proof_image_url')
                             ->label('URL da Imagem de Comprovante')
                             ->url()
                             ->maxLength(255)
-                            ->visible(fn ($record) => $record?->payment_method === 'zelle'),
+                            ->visible(fn($record) => $record?->payment_method === 'zelle'),
                     ])
                     ->columns(2),
             ]);
@@ -107,7 +102,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label('Método')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'crypto' => 'info',
                         'zelle' => 'warning',
                         'card' => 'success',
@@ -115,7 +110,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'pending' => 'warning',
                         'paid' => 'success',
                         'processing' => 'info',
@@ -159,7 +154,7 @@ class OrderResource extends Resource
                     ->label('Pedido Enviado')
                     ->icon('heroicon-o-truck')
                     ->color('info')
-                    ->visible(fn ($record) => $record->status !== 'shipped' && $record->status !== 'delivered' && $record->status !== 'cancelled')
+                    ->visible(fn($record) => $record->status !== 'shipped' && $record->status !== 'delivered' && $record->status !== 'cancelled')
                     ->form([
                         Forms\Components\TextInput::make('tracking_code')
                             ->label('Código de Rastreio')
@@ -169,7 +164,7 @@ class OrderResource extends Resource
                     ])
                     ->action(function ($record, array $data) {
                         $originalStatus = $record->status;
-                        
+
                         $record->update([
                             'tracking_code' => $data['tracking_code'],
                             'status' => 'shipped',
